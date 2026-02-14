@@ -60,7 +60,7 @@ selected_years = st.sidebar.slider(
     "Select Year Range",
     min_value=min_year,
     max_value=max_year,
-    value=(min_year, max_year) # Default tuple (2015, 2025) represents selecting all
+    value=(2023, 2025) # Default to last 3 years to prevent OOM on startup
 )
 
 # Load data (with Loading spinner)
@@ -129,7 +129,7 @@ with tab1:
                 color_discrete_sequence=['purple']
             )
             fig_year.update_xaxes(type='category') # Force display of integer years
-            st.plotly_chart(fig_year, use_container_width=True)
+            st.plotly_chart(fig_year, width="stretch")
 
         # 2. Monthly
         with t_col2:
@@ -142,7 +142,7 @@ with tab1:
                 color_discrete_sequence=['lightgreen']
             )
             fig_month.update_xaxes(dtick=1)
-            st.plotly_chart(fig_month, use_container_width=True)
+            st.plotly_chart(fig_month, width="stretch")
 
         # 3. Weekly
         with t_col1:
@@ -158,7 +158,7 @@ with tab1:
                 title="3. Weekly Patterns",
                 color_discrete_sequence=['lightcoral']
             )
-            st.plotly_chart(fig_day, use_container_width=True)
+            st.plotly_chart(fig_day, width="stretch")
 
         # 4. Hourly Distribution
         with t_col2:
@@ -170,7 +170,7 @@ with tab1:
                 title="4. Hourly Patterns",
                 color_discrete_sequence=['#ff4b4b']
             )
-            st.plotly_chart(fig_hour, use_container_width=True)
+            st.plotly_chart(fig_hour, width="stretch")
 
     else:
         st.warning("No data available to display temporal trends.")
@@ -248,7 +248,7 @@ with tab2:
                     color_discrete_sequence=['teal']
                 )
                 fig_dist.update_layout(**plotly_layout_config)
-                st.plotly_chart(fig_dist, use_container_width=True)
+                st.plotly_chart(fig_dist, width="stretch")
 
         # 3. By Community Area
         with s_col2:
@@ -264,7 +264,7 @@ with tab2:
                     color_discrete_sequence=['steelblue']
                 )
                 fig_comm.update_layout(**plotly_layout_config)
-                st.plotly_chart(fig_comm, use_container_width=True)
+                st.plotly_chart(fig_comm, width="stretch")
 
         # --- Part 3: High-Crime Blocks (Top Blocks) ---
         # 4. Top N Blocks
@@ -285,7 +285,7 @@ with tab2:
                 xaxis_tickangle=-45, 
                 **plotly_layout_config # Apply unified config
             )
-            st.plotly_chart(fig_block, use_container_width=True)
+            st.plotly_chart(fig_block, width="stretch")
 
     else:
         st.info("No data available for spatial analysis.")
@@ -323,7 +323,7 @@ with tab3:
         )
         # Increase height to make each cell clearer
         fig_h1.update_layout(height=500)
-        st.plotly_chart(fig_h1, use_container_width=True)
+        st.plotly_chart(fig_h1, width="stretch")
 
         st.markdown("<br>", unsafe_allow_html=True) # Add some spacing
         st.divider() # Add a divider in between
@@ -344,7 +344,7 @@ with tab3:
             labels=dict(x="Location Description", y="Crime Type", color="Probability")
         )
         fig_h2.update_layout(height=500)
-        st.plotly_chart(fig_h2, use_container_width=True)
+        st.plotly_chart(fig_h2, width="stretch")
 
     else:
         st.info("No data available for the current selection in correlation analysis.")
@@ -378,7 +378,7 @@ with tab3:
             color_continuous_scale=['#ff9999', '#66b3ff'], 
             range_color=[0, 0.5] # Focus on differentiated range
         )
-        st.plotly_chart(fig_arrest, use_container_width=True)
+        st.plotly_chart(fig_arrest, width="stretch")
 
     with col_a2:
         # --- Domestic Violence Ratio Analysis ---
@@ -398,7 +398,7 @@ with tab3:
             color_discrete_sequence=px.colors.sequential.Magma
         )
         fig_domestic.update_layout(showlegend=False)
-        st.plotly_chart(fig_domestic, use_container_width=True)
+        st.plotly_chart(fig_domestic, width="stretch")
     
 
     st.divider()
@@ -422,7 +422,7 @@ with tab3:
         title="Peak Hours Heatmap (Normalize by Row)",
         aspect="auto"
     )
-    st.plotly_chart(fig_time_heat, use_container_width=True)
+    st.plotly_chart(fig_time_heat, width="stretch")
     
 
     # --- Seasonal Trends (Selected Crimes) ---
@@ -442,7 +442,7 @@ with tab3:
             labels={'value': 'Number of Incidents', 'Month': 'Month'}
         )
         fig_seasonal.update_xaxes(dtick=1)
-        st.plotly_chart(fig_seasonal, use_container_width=True)
+        st.plotly_chart(fig_seasonal, width="stretch")
 
 # ================= 5. Footer =================
 st.markdown("---")
