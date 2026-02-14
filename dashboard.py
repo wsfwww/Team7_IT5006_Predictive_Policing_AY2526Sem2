@@ -173,7 +173,7 @@ with tab1:
             st.plotly_chart(fig_hour, use_container_width=True)
 
     else:
-        st.warning("Please select data to view temporal trends.")
+        st.warning("No data available to display temporal trends.")
 
 # ================= Tab 2: Pure Spatial Analysis =================
 with tab2:
@@ -358,9 +358,14 @@ with tab3:
     with col_a1:
         # --- Arrest Rate Analysis ---
         st.markdown("#### Arrest Rate by Top 15 Crimes")
-        arrest_rates = filtered_data.groupby('Primary Type')['Arrest'].mean()
-        top_15_types = filtered_data['Primary Type'].value_counts().head(15).index
-        arrest_rates_top15 = arrest_rates[top_15_types].sort_values(ascending=True)
+        arrest_rates = filtered_data.groupby('Primary Type', observed=True)['Arrest'].mean()
+        
+        # Fix: value_counts on categorical data might return 0-count categories, causing KeyError
+        type_counts = filtered_data['Primary Type'].value_counts()
+        top_15_types = type_counts[type_counts > 0].head(15).index
+        
+        # Use reindex to safely select, dropping any missing keys if mismatch occurs
+        arrest_rates_top15 = arrest_rates.reindex(top_15_types).dropna().sort_values(ascending=True)
         
         # Use color mapping to reflect warning logic (below 15% is light red, above is sky blue)
         fig_arrest = px.bar(
@@ -380,7 +385,7 @@ with tab3:
         st.markdown("#### Domestic Nature Analysis")
         # Calculate top 10 crimes with highest domestic background ratio among top 50 common crimes
         common_crimes = filtered_data['Primary Type'].value_counts().head(50).index
-        domestic_rates = filtered_data[filtered_data['Primary Type'].isin(common_crimes)].groupby('Primary Type')['Domestic'].mean().sort_values(ascending=False)
+        domestic_rates = filtered_data[filtered_data['Primary Type'].isin(common_crimes)].groupby('Primary Type', observed=True)['Domestic'].mean().sort_values(ascending=False)
         top_domestic = domestic_rates.head(10)
 
         fig_domestic = px.bar(
@@ -403,8 +408,9 @@ with tab3:
     
     # --- Crime Schedule ---
     st.markdown("#### Crime Schedule: Peak Hours by Type")
-    top_10_crimes = data['Primary Type'].value_counts().head(10).index
-    df_subset = data[data['Primary Type'].isin(top_10_crimes)]
+    # Use filtered_data to ensure the heatmap reflects the sidebar selection
+    top_10_crimes = filtered_data['Primary Type'].value_counts().head(10).index
+    df_subset = filtered_data[filtered_data['Primary Type'].isin(top_10_crimes)]
     
     # Cross-analysis of crime type and hour
     time_crime_matrix = pd.crosstab(df_subset['Primary Type'], df_subset['Hour'], normalize='index')
@@ -420,19 +426,19 @@ with tab3:
     
 
     # --- Seasonal Trends (Selected Crimes) ---
-    st.markdown("#### Seasonal Trends for Target Crimes")
-    target_crimes = ['BATTERY', 'THEFT', 'DECEPTIVE PRACTICE', 'ROBBERY']
-    available_targets = [c for c in target_crimes if c in data['Primary Type'].unique()]
+    st.markdown("#### Seasonal Trends for Top Crimes")
+    # Dynamically select top 5 crimes from the current filtered data
+    target_crimes = filtered_data['Primary Type'].value_counts().head(5).index
     
-    if available_targets:
-        monthly_trends = data[data['Primary Type'].isin(available_targets)].groupby(['Month', 'Primary Type']).size().unstack()
+    if not target_crimes.empty:
+        monthly_trends = filtered_data[filtered_data['Primary Type'].isin(target_crimes)].groupby(['Month', 'Primary Type'], observed=True).size().unstack()
         
         fig_seasonal = px.line(
             monthly_trends,
             x=monthly_trends.index,
             y=monthly_trends.columns,
             markers=True,
-            title="Monthly Incident Trends: Target Categories",
+            title="Monthly Incident Trends: Top Categories",
             labels={'value': 'Number of Incidents', 'Month': 'Month'}
         )
         fig_seasonal.update_xaxes(dtick=1)
