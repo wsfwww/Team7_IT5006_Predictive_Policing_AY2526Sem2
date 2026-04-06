@@ -12,14 +12,14 @@ Access the interactive dashboard here: **[Chicago Crime Dashboard](https://it500
 
 ## 📂 Repository Structure & File Descriptions
 
-| File / Folder | Description |
-| --- | --- |
-| **`Team7_Phase1_IT5006_EDA.ipynb`** | **EDA Core Code** Include Temporal pattern analysis, Spatial distribution study, Crime correlation analysis, Key insights and patterns discovered. |
-| **`Team7_Phase2_IT5006_AY2526Sem2.ipynb`** | **Model Core Code** Include Data loading, Logistic Regression Modeling, Deep Learning: Multi-Layer Perceptron, Ensemble Learning: Random Forest, Gradient Boosting: LightGBM. |
-| **`dashboard.py`** | **The Core Application.** The main Streamlit script that handles the UI layout, interactive filtering, and visualization logic using Plotly and Matplotlib. |
-| **`gen_data_chunk.ipynb`** | **Data Pipeline.** The Jupyter Notebook used for data slicing and preprocessing. It cleans the raw Chicago Crime dataset, optimizes memory usage (e.g., using `category` types), and exports data into Parquet chunks. |
-| **`data_chunks/`** | **Processed Data.** Contains 11 Parquet files (~170MB total). This chunked storage approach ensures efficient memory management and faster loading times on Streamlit Cloud. |
-| **`phase_2_draft/`**| **Temporary code.** Include data preparation for modeling and model explanation in Chinese. |
-| **`requirements.txt`** | **Environment Setup.** List of required Python libraries (Streamlit, Pandas, Plotly, Matplotlib, Pyarrow, etc.) for local and cloud deployment. |
+| Component | Location | Description |
+|-----------|----------|-------------|
+| **EDA Notebook** | `Team7_Phase1_IT5006_EDA.ipynb` | Comprehensive exploratory analysis including temporal patterns, spatial distribution, crime correlations, and key insights |
+| **Model Notebook** | `Team7_Phase2_IT5006_AY2526Sem2.ipynb` | Model training and evaluation with Logistic Regression, Deep Learning (MLP), Random Forest, and LightGBM |
+| **Data Processing** | `gen_data_chunk.ipynb` | Data preprocessing pipeline that cleans and chunks Chicago crime dataset for optimal memory usage |
+| **Dashboard** | `deployment/eda_dashboard/dashboard.py` | Main Streamlit application for interactive visualization, filtering, and real-time exploration |
+| **Data Chunks** | `deployment/eda_dashboard/data_chunks/` | Processed crime data in Parquet format optimized for cloud deployment |
+| **Model API** | `deployment/model_api/` | Flask-based API server for model inference and predictions |
+| **Dependencies** | `requirements.txt` | Complete list of Python packages and versions |
 
 ---
