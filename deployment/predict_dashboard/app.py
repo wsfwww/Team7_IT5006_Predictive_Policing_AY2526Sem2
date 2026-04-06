@@ -86,7 +86,7 @@ st.divider()
 # ==========================================
 # API endpoint (Change this to your Render URL when deploying the Dashboard!)
 # Example: API_URL = "https://your-flask-api.onrender.com/predict"
-API_URL = "https://prediction-api-vlwb.onrender.com"
+API_URL = "https://prediction-api-vlwb.onrender.com/predict"
 
 if st.button("🔍 Predict Arrest Probability", type="primary", use_container_width=True):
     
