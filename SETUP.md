@@ -233,7 +233,7 @@ rm -rf venv
 
 ---
 
-## 🎓 Verify Installation Completion
+## Verify Installation Completion
 
 Run the following command to verify all critical dependencies:
 ```bash
@@ -252,12 +252,6 @@ print(f'LightGBM: {lightgbm.__version__}')
 "
 ```
 
----
-
-## Project Structure
-
-
----
 
 ## Quick Start Example
 
