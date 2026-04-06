@@ -101,10 +101,10 @@ if st.button("🔍 Predict Arrest Probability", type="primary", use_container_wi
         "offense_category_name": offense_category
     }
     
-    with st.spinner("Analyzing crime patterns..."):
+    with st.spinner("Analyzing crime patterns... (Note: First prediction may take up to 1 minute to wake up the server)"):
         try:
             # Send POST request to the Flask API
-            response = requests.post(API_URL, json=payload, timeout=10)
+            response = requests.post(API_URL, json=payload, timeout=90)
             
             if response.status_code == 200:
                 result = response.json()
