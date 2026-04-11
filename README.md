@@ -23,6 +23,12 @@ Access the interactive dashboard here: **[Chicago Crime Dashboard](https://it500
 | **Dependencies** | `requirements.txt` | Complete list of Python packages and versions |
 
 ---
+## Data
+
+Raw data: https://drive.google.com/file/d/1SYksz0ACxpGQjxSjSdEh23oR_AjBgWOJ/view?usp=drive_link
+Processed data for models: https://drive.google.com/drive/folders/1h6-y723YKJ1SbAZFfH_ohzG80N9YP2Zc?usp=drive_link
+
+---
 
 ## Setup Guide
 
