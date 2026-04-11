@@ -8,7 +8,6 @@ __pycache__/
 Thumbs.db
 
 # Data Files
-*.csv
 *.dat
 *.log
 
