@@ -28,10 +28,21 @@ st.markdown("**Phase 1: Exploratory Data Analysis (EDA) & Visualization**")
 # ================= 2. Data Lazy Loading =================
 @st.cache_data
 def load_ready_data():
-    # Directly load the pre-processed tiny file
     file_path = "./data_chunks/crimes_dashboard_ready.parquet"
     try:
         df = pd.read_parquet(file_path)
+        
+        # --- CRITICAL FIX: Cross-environment Type Normalization ---
+        # Force 'Year' to standard integer to prevent boolean mask failures on cloud
+        if 'Year' in df.columns:
+            df['Year'] = df['Year'].astype(int)
+            
+        # Force categorical columns back to standard strings to ensure .isin() works
+        cat_cols = ['Primary Type', 'Location Description', 'Block', 'DayOfWeek', 'District', 'Community Area']
+        for col in cat_cols:
+            if col in df.columns:
+                df[col] = df[col].astype(str)
+                
         return df
     except Exception as e:
         st.error(f"Error loading pre-processed data: {e}")
