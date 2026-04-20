@@ -84,8 +84,11 @@ def preprocess_human_input(raw_data):
 
 app = Flask(__name__)
 
-# load the trained model
-model = joblib.load('lgbm_model.pkl')
+# Load all models into a dictionary
+MODELS = {
+    'lgbm': joblib.load('lgbm_model.pkl'),
+    'lr': joblib.load('lr_model.pkl')
+}
 
 @app.route('/', methods=['GET'])
 def home():
@@ -96,7 +99,7 @@ def predict():
     try:
         data = request.get_json()
 
-        # input validation
+        # Input validation
         if not data:
             return jsonify({'success': False, 'error': 'No input data provided.'}), 400
 
@@ -112,16 +115,26 @@ def predict():
         if not (0 <= int(data['weekday']) <= 6):
             return jsonify({'success': False, 'error': 'Invalid weekday. Must be between 0 and 6.'}), 400
 
-        # preprocess the input
+        # Model selection (default to 'lgbm')
+        model_type = data.get('model_type', 'lgbm')
+        if model_type not in MODELS:
+            return jsonify({
+                'success': False, 
+                'error': f"Invalid model_type. Choose from {list(MODELS.keys())}"
+            }), 400
+
+        # Preprocess the input
         processed_features = preprocess_human_input(data)
         df = pd.DataFrame([processed_features])
 
-        # make a prediction
-        prediction = model.predict(df)[0]
-        probability = model.predict_proba(df)[0][1]
+        # Prediction using selected model
+        selected_model = MODELS[model_type]
+        prediction = selected_model.predict(df)[0]
+        probability = selected_model.predict_proba(df)[0][1]
         
         return jsonify({
             'success': True,
+            'model_used': model_type,
             'prediction_label': int(prediction),
             'arrest_probability': float(probability)
         })

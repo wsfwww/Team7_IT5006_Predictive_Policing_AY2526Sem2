@@ -60,6 +60,22 @@ DAYS_OF_WEEK = {
     "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6
 }
 
+st.subheader("Model Selection")
+model_choice = st.radio(
+    "Choose Machine Learning Model:",
+    options=["LightGBM (High Accuracy)", "Logistic Regression (Baseline)"],
+    horizontal=True
+)
+
+model_name_map = {
+    "LightGBM (High Accuracy)": "lgbm",
+    "Logistic Regression (Baseline)": "lr"
+}
+selected_model_key = model_name_map[model_choice]
+
+st.divider()
+
+st.subheader("Incident Details")
 # Create columns for better layout
 col1, col2, col3 = st.columns(3)
 
@@ -86,12 +102,14 @@ st.divider()
 # ==========================================
 # API endpoint (Change this to your Render URL when deploying the Dashboard!)
 # Example: API_URL = "https://your-flask-api.onrender.com/predict"
+# API_URL="http://localhost:5001/predict"
 API_URL = "https://prediction-api-vlwb.onrender.com/predict"
 
 if st.button("🔍 Predict Arrest Probability", type="primary", use_container_width=True):
     
     # Map user inputs to backend JSON format
     payload = {
+        "model_name": selected_model_key,
         "hour": hour,
         "month": month,
         "weekday": DAYS_OF_WEEK[day_string],
@@ -101,10 +119,10 @@ if st.button("🔍 Predict Arrest Probability", type="primary", use_container_wi
         "offense_category_name": offense_category
     }
     
-    with st.spinner("Analyzing crime patterns... (Note: First prediction may take up to 1 minute to wake up the server)"):
+    with st.spinner("Analyzing crime patterns... (Note: First prediction may take up to 2 minutes to wake up the server)"):
         try:
             # Send POST request to the Flask API
-            response = requests.post(API_URL, json=payload, timeout=90)
+            response = requests.post(API_URL, json=payload, timeout=120)
             
             if response.status_code == 200:
                 result = response.json()
