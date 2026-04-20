@@ -4,5 +4,4 @@ requests==2.31.0
 pydeck
 plotly
 matplotlib
-pyarrow
-fastparquet
+pyarrow>=10.0.1

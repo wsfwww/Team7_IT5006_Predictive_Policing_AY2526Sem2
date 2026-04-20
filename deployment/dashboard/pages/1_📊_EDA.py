@@ -30,14 +30,14 @@ st.markdown("**Phase 1: Exploratory Data Analysis (EDA) & Visualization**")
 def load_ready_data():
     file_path = "./data_chunks/crimes_dashboard_ready.parquet"
     try:
-        df = pd.read_parquet(file_path)
+        # CRITICAL: Force pandas to use pyarrow engine to prevent cross-platform NaN bugs
+        df = pd.read_parquet(file_path, engine='pyarrow')
         
-        # --- CRITICAL FIX: Cross-environment Type Normalization ---
-        # Force 'Year' to standard integer to prevent boolean mask failures on cloud
+        # Force 'Year' to standard integer
         if 'Year' in df.columns:
             df['Year'] = df['Year'].astype(int)
             
-        # Force categorical columns back to standard strings to ensure .isin() works
+        # Force categorical columns back to standard strings
         cat_cols = ['Primary Type', 'Location Description', 'Block', 'DayOfWeek', 'District', 'Community Area']
         for col in cat_cols:
             if col in df.columns:
