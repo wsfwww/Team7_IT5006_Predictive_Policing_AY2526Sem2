@@ -56,20 +56,6 @@ if data is None or data.empty:
     st.error("Data source not found. Please ensure 'crimes_dashboard_ready.parquet' exists.")
     st.stop()
 
-# ==========================================
-# 🚨 RENDER CLOUD DEBUGGER (Remove before final presentation)
-# ==========================================
-with st.expander("🛠️ CLOUD DIAGNOSTICS (Click to view what Render sees)", expanded=True):
-    if data is not None:
-        st.write(f"**Row Count on Cloud:** {len(data)}")
-        st.write("**Columns loaded:**", data.columns.tolist())
-        st.write("**Data Types on Cloud:**", data.dtypes.astype(str).to_dict())
-        st.write("**First 3 Rows:**")
-        st.dataframe(data.head(3))
-    else:
-        st.error("DATA IS COMPLETELY NONE! The file was not read at all.")
-# ==========================================
-
 # ================= 3. Sidebar Controls =================
 st.sidebar.header("🎛️ Filter Controls")
 
