@@ -26,128 +26,41 @@ st.title("🚓 Chicago Crime Predictive Policing Dashboard")
 st.markdown("**Phase 1: Exploratory Data Analysis (EDA) & Visualization**")
 
 # ================= 2. Data Lazy Loading =================
-@st.cache_data(max_entries=1)
-def load_data_by_range(start_year, end_year):
-    required_cols = [
-        'Year', 'Month', 'DayOfWeek', 'Hour', 
-        'Primary Type', 'Location Description', 'Arrest', 'Domestic',
-        'District', 'Community Area', 'Block', 
-        'Longitude', 'Latitude'
-    ]
-    
-    years_to_load = list(range(start_year, end_year + 1))
-    
-    # STRICT GLOBAL MEMORY BUDGET
-    # 100,000 total rows is generally safe for 512MB RAM with proper cleanup
-    MAX_TOTAL_ROWS = 100000 
-    
-    # ====================================================
-    # PASS 1: Calculate real proportions to preserve trends
-    # ====================================================
-    year_counts = {}
-    total_real_rows = 0
-    
-    for year in years_to_load:
-        file_path = f"./data_chunks/crimes_{year}.parquet"
-        try:
-            # Load ONLY the 'Year' column to minimize RAM overhead
-            temp_col = pd.read_parquet(file_path, columns=['Year'])
-            count = len(temp_col)
-            year_counts[year] = count
-            total_real_rows += count
-            
-            # Immediately free memory
-            del temp_col
-            gc.collect()
-        except (FileNotFoundError, ValueError):
-            continue
-            
-    if not year_counts or total_real_rows == 0:
+@st.cache_data
+def load_ready_data():
+    # Directly load the pre-processed tiny file
+    file_path = "./data_chunks/crimes_dashboard_ready.parquet"
+    try:
+        df = pd.read_parquet(file_path)
+        return df
+    except Exception as e:
+        st.error(f"Error loading pre-processed data: {e}")
         return None
 
-    # ====================================================
-    # PASS 2: Proportional Sampling & Loading
-    # ====================================================
-    all_dfs = []
-    
-    for year in years_to_load:
-        if year not in year_counts:
-            continue
-            
-        file_path = f"./data_chunks/crimes_{year}.parquet"
-        
-        # Calculate proportional sample size for this specific year
-        proportion = year_counts[year] / total_real_rows
-        target_sample_size = int(MAX_TOTAL_ROWS * proportion)
-        
-        # Failsafe: Ensure we don't sample more than exists
-        target_sample_size = min(target_sample_size, year_counts[year])
-        
-        try:
-            # Read into temporary variable
-            try:
-                temp_df = pd.read_parquet(file_path, columns=required_cols)
-            except ValueError:
-                temp_df = pd.read_parquet(file_path)
-                temp_df = temp_df[temp_df.columns.intersection(required_cols)]
+# Load the single data file immediately
+with st.spinner("Loading dashboard data..."):
+    data = load_ready_data()
 
-            # Apply proportional sampling
-            if len(temp_df) > target_sample_size:
-                df_year = temp_df.sample(n=target_sample_size, random_state=42)
-            else:
-                df_year = temp_df.copy()
-
-            # Destroy temporary dataframe immediately and force garbage collection
-            del temp_df 
-            gc.collect()
-
-            # Optimize Data Types to shrink memory footprint
-            cat_cols = ['Primary Type', 'Location Description', 'Block', 'DayOfWeek', 'District', 'Community Area']
-            for col in cat_cols:
-                if col in df_year.columns:
-                    df_year[col] = df_year[col].astype('category')
-            
-            for col in ['Longitude', 'Latitude']:
-                if col in df_year.columns:
-                    df_year[col] = df_year[col].astype('float32')
-            
-            for col in ['Year', 'Month', 'Hour']:
-                if col in df_year.columns:
-                    df_year[col] = pd.to_numeric(df_year[col], downcast='unsigned')
-
-            all_dfs.append(df_year)
-            
-        except Exception as e:
-            print(f"Error loading {year}: {e}")
-            continue
-            
-    if not all_dfs:
-        return None
-        
-    # Concatenate all proportionally sampled years
-    full_df = pd.concat(all_dfs, ignore_index=True)
-    
-    # Final memory cleanup
-    del all_dfs
-    gc.collect()
-    
-    return full_df
+if data is None or data.empty:
+    st.error("Data source not found. Please ensure 'crimes_dashboard_ready.parquet' exists.")
+    st.stop()
 
 # ================= 3. Sidebar Controls =================
 st.sidebar.header("🎛️ Filter Controls")
 
-# 3.1 Year Range Selection (Default: Select All)
-min_year, max_year = 2015, 2025
+# 3.1 Year Range Selection
+min_year = int(data['Year'].min())
+max_year = int(data['Year'].min() + 10) if int(data['Year'].max()) < 2025 else int(data['Year'].max())
+
 selected_years = st.sidebar.slider(
     "Select Year Range",
     min_value=min_year,
     max_value=max_year,
-    value=(2023, 2025) # Default to last 3 years to prevent OOM on startup
+    value=(min_year, max_year) 
 )
 
-# Load data (with Loading spinner)
-with st.spinner(f"Loading data for {selected_years[0]} - {selected_years[1]}..."):
-    data = load_data_by_range(selected_years[0], selected_years[1])
+# Filter by selected year range instantly from memory
+filtered_data = data[(data['Year'] >= selected_years[0]) & (data['Year'] <= selected_years[1])]
 
 if data is None or data.empty:
     st.error("No data found for the selected range!")
@@ -188,7 +101,7 @@ filter_locations = st.sidebar.multiselect(
 
 # 3.3 Data Filtering Logic
 # Start with full data
-filtered_data = data
+# filtered_data = data
 if filter_types:
     filtered_data = filtered_data[filtered_data['Primary Type'].isin(filter_types)]
 if filter_districts:
