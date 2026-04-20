@@ -3,6 +3,7 @@ import pandas as pd
 import pydeck as pdk
 import plotly.express as px
 import matplotlib.pyplot as plt
+import gc
 
 
 # ================= 1. Base Config =================
@@ -44,13 +45,16 @@ def load_data_by_range(start_year, end_year):
         try:
             # 1. Load specific columns only
             try:
-                df_year = pd.read_parquet(file_path, columns=required_cols)
+                temp_df = pd.read_parquet(file_path, columns=required_cols)
             except ValueError:
                 # Fallback: if columns mismatch in older files, load all then filter
-                df_year = pd.read_parquet(file_path)
-                df_year = df_year[df_year.columns.intersection(required_cols)]
+                temp_df = pd.read_parquet(file_path)
+                temp_df = temp_df[temp_df.columns.intersection(required_cols)]
 
-            df_year = df_year.sample(frac=0.2, random_state=42)
+            df_year = temp_df.sample(frac=0.2, random_state=42)
+
+            del temp_df 
+            gc.collect()
 
             # 2. Optimize Data Types (Crucial for Memory)
             # Convert Strings to Category (Huge memory savings)
@@ -280,6 +284,7 @@ with tab2:
                 cb = fig_map.colorbar(hb, ax=ax, label='log10(Crime Count)', fraction=0.03, pad=0.04)
             
             st.pyplot(fig_map)
+            plt.close(fig_map)
             st.caption("Note: Log-scale visualization used to highlight density differences.")
         else:
             st.info("No valid coordinates available for heatmap.")
