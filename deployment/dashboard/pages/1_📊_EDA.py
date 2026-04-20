@@ -25,7 +25,7 @@ st.title("🚓 Chicago Crime Predictive Policing Dashboard")
 st.markdown("**Phase 1: Exploratory Data Analysis (EDA) & Visualization**")
 
 # ================= 2. Data Lazy Loading =================
-@st.cache_data
+@st.cache_data(max_entries=1)
 def load_data_by_range(start_year, end_year):
     # Optimization: Load only columns used in the dashboard to save memory
     # Excludes heavy unused columns like 'Date', 'ID', 'Case Number', 'Updated On', etc.
@@ -50,6 +50,8 @@ def load_data_by_range(start_year, end_year):
                 df_year = pd.read_parquet(file_path)
                 df_year = df_year[df_year.columns.intersection(required_cols)]
 
+            df_year = df_year.sample(frac=0.2, random_state=42)
+
             # 2. Optimize Data Types (Crucial for Memory)
             # Convert Strings to Category (Huge memory savings)
             cat_cols = ['Primary Type', 'Location Description', 'Block', 'DayOfWeek', 'District', 'Community Area']
@@ -67,7 +69,7 @@ def load_data_by_range(start_year, end_year):
                     df_year[col] = pd.to_numeric(df_year[col], downcast='unsigned')
 
             all_dfs.append(df_year)
-            print(f"Loaded data for year: {year} ({len(df_year)} records)")
+            print(f"Loaded data for year: {year} ({len(df_year)} records after sampling)")
         except FileNotFoundError:
             print(f"File not found: {file_path}")
             continue
